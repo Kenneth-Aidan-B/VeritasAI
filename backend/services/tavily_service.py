@@ -46,12 +46,6 @@ async def search_tavily(query: str, max_results: int = 5) -> list[EvidenceItem]:
         else:
             tasks.append(_tavily_search(client, f"{query} latest news", max(2, max_results // 2), include_answer=False))
 
-        # Add India-specific / regional search if claim is India-related
-        if is_india:
-            tasks.append(_tavily_search(client, f"{query} India latest news", max(2, max_results // 2), include_answer=False))
-        else:
-            tasks.append(_tavily_search(client, f"{query} latest news", max(2, max_results // 2), include_answer=False))
-
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         all_items = []

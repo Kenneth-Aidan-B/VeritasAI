@@ -43,7 +43,7 @@ class Settings:
 
     # Performance / Fast mode
     FAST_MODE: bool = os.getenv("FAST_MODE", "true").lower() in ("1", "true", "yes", "on")
-    MAX_CLAIMS: int = int(os.getenv("MAX_CLAIMS", "1"))
+    MAX_CLAIMS: int = int(os.getenv("MAX_CLAIMS", "3"))
     MAX_EVIDENCE_PER_SOURCE: int = int(os.getenv("MAX_EVIDENCE_PER_SOURCE", "6"))
     EXTERNAL_API_TIMEOUT_SEC: float = float(os.getenv("EXTERNAL_API_TIMEOUT_SEC", "15"))
 

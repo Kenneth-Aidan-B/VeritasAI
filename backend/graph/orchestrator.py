@@ -5,6 +5,7 @@ Pipeline: Claim Extractor → Evidence Retriever → Veracity Classifier → Deb
 """
 
 import logging
+import time
 from datetime import datetime
 from typing import Optional, Callable, Any
 
@@ -207,6 +208,9 @@ async def run_analysis(
     """
     graph = get_compiled_graph()
 
+    # Track processing time
+    pipeline_start = time.perf_counter()
+
     # Initialize state
     initial_state = GraphState(
         original_text=text,
@@ -228,6 +232,10 @@ async def run_analysis(
 
         # Build the full analysis result
         result = _build_full_result(final_state)
+
+        # Attach processing time
+        elapsed = round(time.perf_counter() - pipeline_start, 2)
+        result.processing_time_seconds = elapsed
 
         if progress_callback:
             await progress_callback({

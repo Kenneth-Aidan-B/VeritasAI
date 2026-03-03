@@ -182,6 +182,7 @@ class FullAnalysisResult(BaseModel):
     audit_log: list[dict] = Field(default_factory=list)
     started_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     completed_at: Optional[str] = None
+    processing_time_seconds: Optional[float] = None
     error: Optional[str] = None
 
 

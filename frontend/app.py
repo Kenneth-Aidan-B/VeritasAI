@@ -471,6 +471,239 @@ div[data-testid="stRadio"] > div {
     gap: 6px !important;
 }
 
+/* ===== PULSE ANIMATION (verdict pills) ===== */
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 8px var(--glow-color, rgba(255,255,255,0.15)); }
+    50%      { box-shadow: 0 0 22px var(--glow-color, rgba(255,255,255,0.35)); }
+}
+.verdict-pill { animation: fadeInScale 0.5s ease-out, pulse 2.5s ease-in-out 0.5s infinite; }
+
+/* ===== STAGGER FADE-IN ===== */
+@keyframes staggerFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.stagger-item {
+    opacity: 0;
+    animation: staggerFadeIn 0.45s ease-out forwards;
+}
+
+/* ===== WIDTH GROW (bars) ===== */
+@keyframes widthGrow {
+    from { width: 0%; }
+    to   { width: var(--bar-width, 50%); }
+}
+
+/* ===== SHIMMER ===== */
+@keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* ===== ENTITY PILL ===== */
+.entity-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin: 3px 4px;
+    background: rgba(139,92,246,0.12);
+    color: #c4b5fd;
+    border: 1px solid rgba(139,92,246,0.25);
+    animation: staggerFadeIn 0.4s ease-out forwards;
+    opacity: 0;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+.entity-pill:hover {
+    transform: scale(1.08);
+    background: rgba(139,92,246,0.25);
+}
+
+/* ===== CHECK-WORTHINESS BAR ===== */
+.check-bar-track {
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 6px 0;
+}
+.check-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #6366f1, #a78bfa, #c084fc);
+    background-size: 200% 100%;
+    animation: widthGrow 1s ease-out forwards, shimmer 3s linear infinite;
+}
+
+/* ===== RELEVANCE / CREDIBILITY MINI BARS ===== */
+.mini-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 3px 0;
+    flex: 1;
+}
+.mini-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    animation: widthGrow 0.8s ease-out forwards;
+}
+.mini-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 2px 0;
+}
+.mini-bar-label {
+    font-size: 0.7rem;
+    color: #8b949e;
+    min-width: 72px;
+}
+.mini-bar-value {
+    font-size: 0.7rem;
+    color: #e6edf3;
+    min-width: 32px;
+    text-align: right;
+}
+
+/* ===== PIPELINE DIAGRAM ===== */
+.pipeline-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 20px 10px;
+    overflow-x: auto;
+    animation: fadeInScale 0.6s ease-out;
+}
+.pipeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 14px;
+    background: rgba(25,20,50,0.7);
+    border: 2px solid rgba(139,92,246,0.3);
+    border-radius: 14px;
+    min-width: 80px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pipeline-node:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 20px rgba(139,92,246,0.3);
+}
+.pipeline-node.completed {
+    border-color: #10a37f;
+    box-shadow: 0 0 12px rgba(16,163,127,0.3);
+}
+.pipeline-node .node-icon { font-size: 1.3rem; }
+.pipeline-node .node-label { font-size: 0.68rem; color: #c4b5fd; font-weight: 600; }
+.pipeline-arrow {
+    color: #6366f1;
+    font-size: 1.2rem;
+    margin: 0 2px;
+    animation: shimmer 2s linear infinite;
+    background: linear-gradient(90deg, #6366f1, #a78bfa, #6366f1);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ===== DEBATE TIMELINE ===== */
+.debate-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.debate-timeline::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, #22c55e, #8b5cf6, #ef4444);
+    border-radius: 2px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 14px;
+    animation: staggerFadeIn 0.4s ease-out forwards;
+    opacity: 0;
+}
+.timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 12px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #0a0015;
+}
+.timeline-dot.advocate { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+.timeline-dot.skeptic  { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+.timeline-dot.judge    { background: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,0.5); }
+
+/* ===== CONFETTI ===== */
+@keyframes confettiFall {
+    0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
+}
+.confetti-container {
+    position: relative;
+    display: inline-block;
+}
+.confetti-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+    animation: confettiFall 1.8s ease-out forwards;
+    pointer-events: none;
+}
+
+/* ===== DURATION BADGE ===== */
+.duration-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: rgba(99,102,241,0.12);
+    color: #a5b4fc;
+    border: 1px solid rgba(99,102,241,0.25);
+    animation: fadeInScale 0.5s ease-out 0.4s both;
+}
+
+/* ===== CONFLICTING EVIDENCE CALLOUT ===== */
+.conflict-callout {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-left: 3px solid #ef4444;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    color: #fca5a5;
+    font-size: 0.88rem;
+}
+.ambiguity-callout {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-left: 3px solid #f59e0b;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    color: #fde68a;
+    font-size: 0.88rem;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -988,7 +1221,7 @@ elif input_mode == "📎 Image / Document":
         )
         # Show image preview for images
         if file_name.endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
-            st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
+            st.image(uploaded_file, caption="Uploaded Image", width="stretch")
 
         # Extract text from file
         extracted = ""
@@ -1077,13 +1310,19 @@ if current_query is not None and current_result is not None:
         uncertain_n  = sum(1 for v in verdicts_list if v == "INSUFFICIENT_EVIDENCE")
         gemini_verified = has_gemini_evidence(claims)
 
+        # Duration badge
+        proc_time = current_result.get("processing_time_seconds")
+        duration_html = ''
+        if proc_time is not None:
+            duration_html = f'<span class="duration-badge">⏱️ {proc_time:.1f}s</span>'
+
         kf_gemini = '<span class="gemini-badge">✦ Gemini AI Verified</span>' if gemini_verified else ''
         kf_html = (
             '<div class="key-findings">'
             '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
             '<span style="font-size:1.3rem;">🛡️</span>'
             '<span style="font-size:1.1rem;font-weight:700;color:#e6edf3;">Key Findings</span>'
-            f'{kf_gemini}'
+            f'{kf_gemini} {duration_html}'
             '</div>'
             '<div style="display:flex;gap:16px;flex-wrap:wrap;">'
             f'<div class="stat-card" style="flex:1;min-width:100px;"><div class="stat-value">{len(claims)}</div><div class="stat-label">Claims</div></div>'
@@ -1115,6 +1354,30 @@ if current_query is not None and current_result is not None:
                 if orig and orig != atomic:
                     st.caption(f"From: _{orig}_")
 
+                # ── Entity Pills ──
+                entities = claim_info.get("entities", [])
+                if entities:
+                    pills_html = ''.join(
+                        f'<span class="entity-pill" style="animation-delay:{idx*0.08}s;">🏷️ {ent}</span>'
+                        for idx, ent in enumerate(entities[:8])
+                    )
+                    st.markdown(f'<div style="margin:6px 0 10px 0;">{pills_html}</div>', unsafe_allow_html=True)
+
+                # ── Check-Worthiness Bar ──
+                cw = claim_info.get("check_worthiness", 0)
+                if cw and cw > 0:
+                    cw_pct = cw * 100
+                    cw_label = "Low" if cw_pct < 40 else ("Medium" if cw_pct < 70 else "High")
+                    st.markdown(
+                        f'<div style="margin:4px 0 10px 0;">'
+                        f'<span style="font-size:0.75rem;color:#8b949e;">Check-Worthiness: '
+                        f'<strong style="color:#c4b5fd;">{cw_pct:.0f}%</strong> ({cw_label})</span>'
+                        f'<div class="check-bar-track">'
+                        f'<div class="check-bar-fill" style="--bar-width:{cw_pct}%;"></div>'
+                        f'</div></div>',
+                        unsafe_allow_html=True,
+                    )
+
                 if verdict_info:
                     vl = verdict_info.get("verdict", "INSUFFICIENT_EVIDENCE")
                     conf = verdict_info.get("confidence", 0)
@@ -1122,7 +1385,22 @@ if current_query is not None and current_result is not None:
 
                     vc1, vc2 = st.columns([3, 2])
                     with vc1:
+                        # Confetti burst for supported verdicts
+                        confetti_html = ''
+                        if vl in ("SUPPORTED", "LIKELY_SUPPORTED"):
+                            confetti_colors = ["#10a37f","#22c55e","#86efac","#a78bfa","#60a5fa","#fbbf24"]
+                            particles = ''.join(
+                                f'<span class="confetti-particle" style="'
+                                f'background:{confetti_colors[p%len(confetti_colors)]};'
+                                f'left:{10+p*12}px;top:-5px;'
+                                f'animation-delay:{p*0.12}s;'
+                                f'animation-duration:{1.2+p*0.15}s;"></span>'
+                                for p in range(8)
+                            )
+                            confetti_html = f'<div class="confetti-container">{particles}</div>'
+
                         st.markdown(
+                            f'{confetti_html}'
                             f'<div class="verdict-pill" style="background:{vc["color"]}18;'
                             f'border:2px solid {vc["color"]};color:{vc["color"]};'
                             f'--glow-color:{vc["glow"]};'
@@ -1164,7 +1442,7 @@ if current_query is not None and current_result is not None:
                                 st.markdown(f"**Reasoning:** {reasoning_text}")
 
                     with vc2:
-                        st.plotly_chart(confidence_gauge(conf, vl), use_container_width=True, key=f"g_{i}")
+                        st.plotly_chart(confidence_gauge(conf, vl), key=f"g_{i}")
 
                 # Correction display
                 if correction_info and verdict_info:
@@ -1219,7 +1497,7 @@ if current_query is not None and current_result is not None:
                                     evidence_info.get("total_refuting", 0),
                                     evidence_info.get("total_neutral", 0),
                                 ),
-                                use_container_width=True, key=f"p_{i}",
+                                key=f"p_{i}",
                             )
                         with ec1:
                             for j, item in enumerate(items):
@@ -1252,10 +1530,47 @@ if current_query is not None and current_result is not None:
                                         f'&nbsp; Credibility: **{cred:.0f}%** &nbsp; Stance: **{stance}**',
                                         unsafe_allow_html=True,
                                     )
+
+                                    # Relevance & Credibility mini-bars
+                                    rel_score = item.get("relevance_score", 0.5) * 100
+                                    rel_color = "#60a5fa" if rel_score >= 50 else "#f59e0b"
+                                    cred_color = "#10a37f" if cred >= 60 else ("#f59e0b" if cred >= 40 else "#ef4444")
+                                    st.markdown(
+                                        f'<div style="margin:6px 0 8px 0;">'
+                                        f'<div class="mini-bar-row">'
+                                        f'<span class="mini-bar-label">Relevance</span>'
+                                        f'<div class="mini-bar-track"><div class="mini-bar-fill" style="--bar-width:{rel_score}%;background:{rel_color};"></div></div>'
+                                        f'<span class="mini-bar-value">{rel_score:.0f}%</span></div>'
+                                        f'<div class="mini-bar-row">'
+                                        f'<span class="mini-bar-label">Credibility</span>'
+                                        f'<div class="mini-bar-track"><div class="mini-bar-fill" style="--bar-width:{cred}%;background:{cred_color};"></div></div>'
+                                        f'<span class="mini-bar-value">{cred:.0f}%</span></div>'
+                                        f'</div>',
+                                        unsafe_allow_html=True,
+                                    )
+
                                     st.markdown(item.get("snippet", "No content."))
                                     if item_url:
                                         link_label = f"🔗 {brand['name']}" if brand else "🔗 Source"
                                         st.markdown(f"[{link_label}]({item_url})")
+
+                        # Conflicting evidence callout
+                        conflicting = (verdict_info or {}).get("conflicting_evidence", [])
+                        if conflicting:
+                            conflict_html = '<div class="conflict-callout"><strong>⚠️ Conflicting Evidence Detected</strong><br>'
+                            for ce in conflicting[:3]:
+                                conflict_html += f'• {ce}<br>'
+                            conflict_html += '</div>'
+                            st.markdown(conflict_html, unsafe_allow_html=True)
+
+                        # Ambiguity notes
+                        ambiguity = (verdict_info or {}).get("ambiguity_notes", [])
+                        if ambiguity:
+                            amb_html = '<div class="ambiguity-callout"><strong>🟡 Ambiguity Notes</strong><br>'
+                            for an in ambiguity[:3]:
+                                amb_html += f'• {an}<br>'
+                            amb_html += '</div>'
+                            st.markdown(amb_html, unsafe_allow_html=True)
                     else:
                         st.info("No evidence retrieved for this claim.")
 
@@ -1313,7 +1628,31 @@ if current_query is not None and current_result is not None:
                             st.markdown("**🎯 Bias Analysis**")
                             bb1, bb2 = st.columns(2)
                             with bb1:
-                                st.metric("Bias Score", f"{bias.get('overall_bias_score',0)*100:.0f}%")
+                                bias_score = bias.get('overall_bias_score', 0)
+                                bias_pct = bias_score * 100 if isinstance(bias_score, (int, float)) else 0
+                                bias_color = "#10a37f" if bias_pct < 30 else ("#f59e0b" if bias_pct < 60 else "#ef4444")
+                                fig_bias = go.Figure(go.Indicator(
+                                    mode="gauge+number",
+                                    value=bias_pct,
+                                    number={"suffix": "%", "font": {"size": 28, "color": "#e6edf3", "family": "Inter"}},
+                                    title={"text": "Bias Score", "font": {"color": "#8b949e", "size": 12}},
+                                    gauge={
+                                        "axis": {"range": [0, 100], "tickfont": {"color": "#8b949e", "size": 9}},
+                                        "bar": {"color": bias_color, "thickness": 0.7},
+                                        "bgcolor": "rgba(30,35,45,0.5)",
+                                        "borderwidth": 0,
+                                        "steps": [
+                                            {"range": [0, 30],   "color": "rgba(16,163,127,0.1)"},
+                                            {"range": [30, 60],  "color": "rgba(245,158,11,0.1)"},
+                                            {"range": [60, 100], "color": "rgba(239,68,68,0.1)"},
+                                        ],
+                                    },
+                                ))
+                                fig_bias.update_layout(
+                                    height=160, margin=dict(l=20, r=20, t=30, b=10),
+                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                                )
+                                st.plotly_chart(fig_bias, key=f"bias_{i}")
                             with bb2:
                                 st.metric("Direction", bias.get("bias_direction","neutral").title())
                             if bias.get("loaded_language"):
@@ -1332,31 +1671,102 @@ if current_query is not None and current_result is not None:
                     if debate_info:
                         adv = debate_info.get("advocate_arguments", [])
                         skp = debate_info.get("skeptic_arguments", [])
+
+                        # Debate timeline
+                        timeline_html = '<div class="debate-timeline">'
+                        round_idx = 0
                         for k, arg in enumerate(adv):
-                            st.markdown(
+                            timeline_html += (
+                                f'<div class="timeline-item" style="animation-delay:{round_idx*0.15}s;">'
+                                f'<div class="timeline-dot advocate"></div>'
                                 f'<div class="debate-card debate-advocate">'
-                                f'<strong>🟢 Advocate (Round {k+1})</strong><br>{arg.get("argument","")}</div>',
-                                unsafe_allow_html=True,
+                                f'<strong>🟢 Advocate (Round {k+1})</strong><br>{arg.get("argument","")}'
+                                f'</div></div>'
                             )
+                            round_idx += 1
                             if k < len(skp):
-                                st.markdown(
+                                timeline_html += (
+                                    f'<div class="timeline-item" style="animation-delay:{round_idx*0.15}s;">'
+                                    f'<div class="timeline-dot skeptic"></div>'
                                     f'<div class="debate-card debate-skeptic">'
-                                    f'<strong>🔴 Skeptic (Round {k+1})</strong><br>{skp[k].get("argument","")}</div>',
-                                    unsafe_allow_html=True,
+                                    f'<strong>🔴 Skeptic (Round {k+1})</strong><br>{skp[k].get("argument","")}'
+                                    f'</div></div>'
                                 )
-                        st.markdown(
+                                round_idx += 1
+
+                        # Judge verdict at the end
+                        timeline_html += (
+                            f'<div class="timeline-item" style="animation-delay:{round_idx*0.15}s;">'
+                            f'<div class="timeline-dot judge"></div>'
                             f'<div class="debate-card debate-judge">'
                             f'<strong>⚖️ Judge: {debate_info.get("judge_verdict","N/A")}</strong> '
                             f'({debate_info.get("judge_confidence",0):.0f}%)<br>'
-                            f'{debate_info.get("judge_reasoning","")}</div>',
-                            unsafe_allow_html=True,
+                            f'{debate_info.get("judge_reasoning","")}'
+                            f'</div></div>'
                         )
+                        timeline_html += '</div>'
+                        st.markdown(timeline_html, unsafe_allow_html=True)
                     else:
                         st.info("Debate was not enabled for this claim.")
 
         # ── Overview Tab ──
         with tabs[len(claims)]:
             st.markdown("##### 📊 Analysis Overview")
+
+            # ── Animated Pipeline Diagram ──
+            pipeline_nodes = [
+                ("🔍", "Extract"), ("📡", "Retrieve"), ("⚖️", "Classify"),
+                ("🤖", "Debate"), ("📝", "Explain"), ("✏️", "Correct"), ("✅", "Finalize"),
+            ]
+            pipe_html = '<div class="pipeline-container">'
+            for idx, (icon, label) in enumerate(pipeline_nodes):
+                pipe_html += (
+                    f'<div class="pipeline-node completed" style="animation:staggerFadeIn 0.4s ease-out {idx*0.12}s forwards;opacity:0;">'
+                    f'<span class="node-icon">{icon}</span>'
+                    f'<span class="node-label">{label}</span></div>'
+                )
+                if idx < len(pipeline_nodes) - 1:
+                    pipe_html += '<span class="pipeline-arrow">→</span>'
+            pipe_html += '</div>'
+            st.markdown(pipe_html, unsafe_allow_html=True)
+
+            # ── Confidence Comparison Bar Chart ──
+            if len(claims) > 0:
+                claim_labels = []
+                conf_values = []
+                bar_colors = []
+                for ci, c in enumerate(claims):
+                    ct = c.get("claim", {}).get("atomic_claim", "N/A")
+                    v = c.get("verdict", {}).get("verdict", "INSUFFICIENT_EVIDENCE")
+                    cf = c.get("verdict", {}).get("confidence", 0)
+                    vc = VERDICT_CONFIG.get(v, VERDICT_CONFIG["INSUFFICIENT_EVIDENCE"])
+                    claim_labels.append(f"C{ci+1}: {ct[:40]}{'…' if len(ct)>40 else ''}")
+                    conf_values.append(cf)
+                    bar_colors.append(vc["color"])
+
+                fig_bar = go.Figure(data=[go.Bar(
+                    y=claim_labels,
+                    x=conf_values,
+                    orientation='h',
+                    marker_color=bar_colors,
+                    text=[f"{v:.0f}%" for v in conf_values],
+                    textposition='auto',
+                    textfont=dict(color="#e6edf3", size=12),
+                )])
+                fig_bar.update_layout(
+                    title=dict(text="Confidence by Claim", font=dict(color="#e6edf3", size=14)),
+                    xaxis=dict(range=[0, 100], title=dict(text="Confidence %", font=dict(color="#8b949e")),
+                               tickfont=dict(color="#8b949e"),
+                               gridcolor="rgba(255,255,255,0.05)"),
+                    yaxis=dict(tickfont=dict(color="#e6edf3", size=10), autorange="reversed"),
+                    height=max(160, 60 * len(claims)),
+                    margin=dict(l=10, r=20, t=40, b=20),
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                )
+                st.plotly_chart(fig_bar, key="conf_bar")
+
+            st.markdown("---")
+
             tbl = []
             for c in claims:
                 ct = c.get("claim", {}).get("atomic_claim", "N/A")
@@ -1414,7 +1824,7 @@ if current_query is not None and current_result is not None:
                 sr1, sr2 = st.columns([1, 1])
                 with sr1:
                     st.markdown("**Source Diversity Radar**")
-                    st.plotly_chart(source_radar(all_evidence), use_container_width=True, key="radar")
+                    st.plotly_chart(source_radar(all_evidence), key="radar")
                 with sr2:
                     st.markdown("**Source Breakdown**")
                     source_stats = {}
