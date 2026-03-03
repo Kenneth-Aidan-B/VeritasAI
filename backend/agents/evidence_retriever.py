@@ -25,6 +25,41 @@ from backend.services.cache_service import get_cached_result, search_similar_cla
 
 logger = logging.getLogger(__name__)
 
+
+def _build_regional_claim_query(claim_text: str) -> str:
+    """
+    Build a regional query variant based on geographic signals in the claim.
+    Returns a modified query for national/state-level news, or the original claim
+    if no geographic context is detected.
+    """
+    q = claim_text.lower()
+
+    # Tamil Nadu / South India detection
+    tn_keywords = [
+        "tamil nadu", "tamilnadu", "chennai", "madurai", "coimbatore",
+        "trichy", "salem", "tirunelveli", "dmk", "aiadmk",
+        "mk stalin", "stalin", "annamalai", "kollywood",
+        "rajinikanth", "kamal haasan", "tn ", "kanchipuram",
+        "vellore", "thanjavur", "erode", "tiruppur",
+    ]
+    if any(kw in q for kw in tn_keywords):
+        return f"{claim_text} Tamil Nadu latest news today"
+
+    # India-wide detection
+    india_keywords = [
+        "india", "indian", "modi", "bjp", "congress", "delhi",
+        "mumbai", "kolkata", "bangalore", "hyderabad", "kerala",
+        "karnataka", "maharashtra", "punjab", "rajasthan",
+        "gujarat", "uttar pradesh", "bihar", "assam", "odisha",
+        "andhra", "telangana", "cricket", "ipl", "bcci", "rupee",
+        "sensex", "nifty", "isro", "bollywood",
+    ]
+    if any(kw in q for kw in india_keywords):
+        return f"{claim_text} India latest news"
+
+    # No specific region — return original (Serper already does global)
+    return claim_text
+
 # ─── Stance Classification Prompt ────────────────────────────────────────────
 
 STANCE_CLASSIFICATION_PROMPT = """You are an evidence analysis expert. Given a CLAIM and a piece of EVIDENCE, classify the evidence's stance toward the claim.
@@ -84,12 +119,12 @@ def _infer_stance_fast(claim_text: str, evidence: EvidenceItem) -> str:
         "debunk", "disproven", "scientifically disproven", "no evidence",
         "no scientific evidence", "fabricat", "hoax", "conspiracy theory",
         "misleading claim", "inaccurate claim", "baseless", "unfounded",
-        "false claim", "fact check: false", "pants on fire", "rated false",
+        "false claim", "pants on fire", "rated false",
         "pseudoscience", "discredited", "widely rejected",
         "no credible evidence", "lacks evidence", "flawed claim",
         "myth", "misinformation", "disinformation",
         "there is no evidence", "refuted",
-        "fact check:", "isn't evidence", "don't contain", "doesn't contain",
+        "isn't evidence", "don't contain", "doesn't contain",
         "do not contain", "does not contain", "no microchip",
         "bogus claim", "bogus", "rumor", "rumors",
         "misconstr", "debunking",
@@ -265,23 +300,25 @@ def _infer_stance_fast(claim_text: str, evidence: EvidenceItem) -> str:
         return "supports"
 
     # ── Layer 6: Implicit refutation for extraordinary claims ────────
-    # If the claim asserts a dramatic event (death, war, attack, etc.)
-    # and the evidence discusses the same entity but without mentioning
-    # the alleged event, the evidence implicitly contradicts the claim.
-    extraordinary_event_words = [
+    # Only for very specific extraordinary claims (death, assassination, etc.)
+    # where the evidence discusses the SAME person as ALIVE or doing normal activities.
+    # This is much more conservative than before — requires direct contradiction.
+    extraordinary_death_words = [
         "killed", "murdered", "assassinated", "died", "dead", "death",
-        "attacked", "bombed", "invaded", "war", "arrested", "jailed",
-        "resigned", "overthrown", "coup", "shot", "executed",
-        "scored", "won", "defeated", "beat", "lost",
+        "shot dead", "executed",
     ]
-    claim_has_event = any(e in claim_lower for e in extraordinary_event_words)
+    claim_has_death = any(e in claim_lower for e in extraordinary_death_words)
 
-    if claim_has_event and overlap >= 2:
-        # Evidence discusses the same entities
-        # Check if the evidence mentions the specific event
-        event_in_evidence = any(e in text for e in extraordinary_event_words if e in claim_lower)
-        if not event_in_evidence:
-            # Evidence discusses same entity but NOT the event → implicit refutation
+    if claim_has_death and overlap >= 3:
+        # Check if evidence explicitly shows the person as alive / active
+        alive_signals = [
+            "is alive", "met with", "attended", "spoke at", "announced",
+            "visited", "inaugurated", "signed", "chaired", "addressed",
+            "tweeted", "posted", "said today", "continues to",
+            "is currently", "latest speech", "recent meeting",
+        ]
+        alive_in_evidence = sum(1 for s in alive_signals if s in text)
+        if alive_in_evidence >= 1:
             return "refutes"
 
     return "neutral"
@@ -437,16 +474,33 @@ async def retrieve_evidence(state: GraphState) -> GraphState:
 
             # Query all sources in parallel (Tavily, Google Fact Check, Wikipedia, Serper, Gemini)
             per_source_limit = max(1, settings.MAX_EVIDENCE_PER_SOURCE)
+
+            # Build regional query variant for broader coverage
+            regional_query = _build_regional_claim_query(claim_text)
+
             tavily_task = search_tavily(claim_text, max_results=per_source_limit)
             factcheck_task = search_factcheck(claim_text, max_results=per_source_limit)
             wikipedia_task = search_wikipedia(claim_text, max_results=per_source_limit)
             serper_task = search_serper(claim_text, max_results=per_source_limit)
             gemini_task = verify_with_gemini(claim_text)
 
+            # Additional regional search if the claim has a geographic angle
+            regional_tasks = []
+            if regional_query and regional_query != claim_text:
+                regional_tasks.append(search_serper(regional_query, max_results=max(2, per_source_limit // 2)))
+
             tavily_results, factcheck_results, wiki_results, serper_results, gemini_results = await asyncio.gather(
                 tavily_task, factcheck_task, wikipedia_task, serper_task, gemini_task,
                 return_exceptions=True,
             )
+
+            # Also gather regional results
+            regional_results_list = []
+            if regional_tasks:
+                regional_raw = await asyncio.gather(*regional_tasks, return_exceptions=True)
+                for rr in regional_raw:
+                    if isinstance(rr, list):
+                        regional_results_list.extend(rr)
 
             # Handle exceptions from parallel calls
             if isinstance(tavily_results, Exception):
@@ -472,6 +526,7 @@ async def retrieve_evidence(state: GraphState) -> GraphState:
                 + list(wiki_results)
                 + list(serper_results)
                 + list(gemini_results)
+                + regional_results_list
             )
 
             # Deduplicate
@@ -482,7 +537,7 @@ async def retrieve_evidence(state: GraphState) -> GraphState:
                 key=lambda e: (float(e.relevance_score) + float(e.credibility_score)),
                 reverse=True,
             )
-            all_evidence = all_evidence[:10]
+            all_evidence = all_evidence[:20]
 
             # Classify stance for all items
             # Google Fact Check already has stance from rating, but re-check with

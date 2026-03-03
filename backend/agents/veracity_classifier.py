@@ -429,39 +429,81 @@ def _is_extraordinary_claim(claim_text: str) -> tuple[bool, str]:
 
 def _check_evidence_contradicts_claim(claim_text: str, evidence_items) -> tuple[bool, float, str]:
     """
-    Check if evidence about the same entities implicitly contradicts the claim.
-    E.g., claim: 'Modi killed by Iran' but evidence discusses Modi alive and meeting people.
+    CONSERVATIVE check: only returns implicitly_refuted=True when evidence
+    contains strong *positive signals* that directly contradict the claim.
+
+    Example: claim 'Modi killed by Iran' → evidence shows Modi alive, meeting
+    world leaders, giving speeches → implicitly refuted.
+
+    This does NOT fire just because evidence discusses the same entities.
+    That was the old bug — topic overlap != contradiction.
+
     Returns (implicitly_refuted, confidence, reasoning).
     """
-    import re
     claim_lower = claim_text.lower()
 
-    # Extract entity-like terms (capitalized words, multi-word names)
-    claim_words = set(w for w in claim_lower.split() if len(w) > 3)
-    # Remove common stop words
-    stops = {"that", "this", "with", "from", "have", "been", "were", "which", "their",
-             "about", "would", "there", "when", "what", "some", "other", "into", "them",
-             "than", "could", "will", "each", "make", "like", "does", "said", "also"}
-    claim_words -= stops
+    # ── Only check death / assassination / catastrophe claims ─────────
+    death_keywords = [
+        "killed", "died", "dead", "assassinated", "murdered", "passed away",
+        "shot dead", "execution", "executed", "fatal",
+    ]
+    is_death_claim = any(kw in claim_lower for kw in death_keywords)
 
-    entity_overlap_count = 0
-    event_corroboration = 0
-    total_items = len(evidence_items)
+    if not is_death_claim:
+        # For non-death claims, we do NOT attempt implicit refutation.
+        # Topic overlap without explicit stance is NOT a contradiction.
+        return False, 0.0, ""
+
+    # ── Extract person names from the claim ───────────────────────────
+    # Look for capitalized multi-word names in the ORIGINAL claim text
+    import re
+    name_pattern = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', claim_text)
+    person_names = [n.lower() for n in name_pattern if len(n) > 2]
+
+    if not person_names:
+        return False, 0.0, ""
+
+    # ── Look for "alive signals" — evidence the person is alive ───────
+    alive_signals = [
+        "met with", "meeting with", "meets with", "spoke at", "speaking at",
+        "attended", "attending", "announced", "announces", "addressed",
+        "visited", "visiting", "inaugurated", "inaugurates", "launched",
+        "signed", "signing", "released", "released statement",
+        "tweeted", "posted on", "gave a speech", "is alive",
+        "is safe", "is well", "appeared", "arrives", "arrived",
+        "chaired", "presided", "led the", "congratulated",
+        "participated", "will attend", "will visit", "is scheduled",
+        "denied", "denies reports", "dismissed rumors",
+    ]
+
+    alive_evidence_count = 0
+    alive_details = []
 
     for item in evidence_items:
         text = f"{item.title} {item.snippet}".lower()
-        # Count how many claim words appear in evidence
-        overlap = sum(1 for w in claim_words if w in text)
-        if overlap >= 2:
-            entity_overlap_count += 1
 
-    # If many evidence items discuss the same entities but NONE support the claim,
-    # the evidence implicitly contradicts the claim
-    if total_items >= 2 and entity_overlap_count >= 2:
-        # Evidence is topically related but doesn't support the specific assertion
-        return True, 75.0 + min(15.0, entity_overlap_count * 3.0), (
-            f"Found {entity_overlap_count}/{total_items} evidence items discussing "
-            f"the same entities, but none corroborate the specific claim assertion."
+        # Check if evidence mentions any of the claimed persons
+        mentions_person = any(name in text for name in person_names)
+        if not mentions_person:
+            continue
+
+        # Check if evidence contains alive signals for that person
+        found_signals = [sig for sig in alive_signals if sig in text]
+        if found_signals:
+            alive_evidence_count += 1
+            alive_details.append(f"'{item.title[:60]}' contains: {', '.join(found_signals[:3])}")
+
+    # ── Decision: require multiple alive signals to refute ────────────
+    if alive_evidence_count >= 3:
+        return True, 80.0 + min(10.0, alive_evidence_count * 2.0), (
+            f"Death/harm claim about {', '.join(person_names)}, but {alive_evidence_count} "
+            f"evidence items show the person alive and active. "
+            f"Details: {'; '.join(alive_details[:3])}"
+        )
+    elif alive_evidence_count >= 2:
+        return True, 70.0, (
+            f"Death/harm claim about {', '.join(person_names)}, but {alive_evidence_count} "
+            f"evidence items contain alive signals. {'; '.join(alive_details[:2])}"
         )
 
     return False, 0.0, ""
@@ -559,18 +601,24 @@ def _fast_verdict_from_evidence(evidence_result) -> tuple[VerdictLabel, float, s
             evidence_result.claim_text, evidence_result.evidence_items
         )
 
-        if is_extraordinary and total >= 2 and implicitly_refuted:
-            # Extraordinary claim with related evidence but no corroboration = REFUTED
+        if is_extraordinary and implicitly_refuted:
+            # Extraordinary claim with alive signals contradicting = REFUTED
             verdict = VerdictLabel.REFUTED
             confidence = impl_conf
-        elif is_extraordinary and total >= 2:
-            # Extraordinary claim with evidence but no corroboration = LIKELY_REFUTED
+        elif is_extraordinary and total >= 3 and n >= 3:
+            # Extraordinary claim with decent evidence volume but ZERO corroboration
+            # This is suspicious — major events would have corroborating evidence
             verdict = VerdictLabel.LIKELY_REFUTED
-            confidence = 68.0
+            confidence = 65.0
+        elif is_extraordinary and total >= 2:
+            # Some evidence but no corroboration — lean toward insufficient
+            # Don't jump to LIKELY_REFUTED just because it's extraordinary
+            verdict = VerdictLabel.INSUFFICIENT_EVIDENCE
+            confidence = 45.0
         elif is_extraordinary and total < 2:
             # Extraordinary claim with barely any evidence
-            verdict = VerdictLabel.LIKELY_REFUTED
-            confidence = 58.0
+            verdict = VerdictLabel.INSUFFICIENT_EVIDENCE
+            confidence = 38.0
         else:
             # Regular claim with only neutral evidence
             verdict = VerdictLabel.INSUFFICIENT_EVIDENCE
