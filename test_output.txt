@@ -1,0 +1,68 @@
+{
+  "session_id": "67fb5a49-8ffa-47ec-a0ac-58faaf32cab6",
+  "original_text": "The Great Wall of China is visible from space with the naked eye.",
+  "status": "completed",
+  "claims": [],
+  "responsible_ai_card": {
+    "assumptions": [
+      "Relying on web sources available as of analysis date",
+      "English-language content only",
+      "Claims evaluated independently; cross-claim context may be limited",
+      "Source credibility scores are estimated based on domain reputation",
+      "LLM reasoning may contain biases from training data"
+    ],
+    "limitations": [
+      "Satire/sarcasm detection is limited",
+      "Image/video verification is not supported (text-only)",
+      "Non-English content analysis is not supported",
+      "Real-time social media ingestion at scale is not implemented",
+      "Very recent events may not have sufficient web coverage",
+      "Paywalled content cannot be accessed"
+    ],
+    "confidence_calibration": [
+      "Uncertain results are never presented as definitive",
+      "INSUFFICIENT_EVIDENCE is a first-class verdict, not a failure",
+      "Confidence scores reflect the strength of available evidence",
+      "Multi-agent debate is used to stress-test uncertain verdicts"
+    ],
+    "bias_acknowledgment": [
+      "Evidence sources may carry political/ideological bias",
+      "The LLM has potential biases from training data",
+      "Web search results may be influenced by algorithmic ranking",
+      "Source credibility scoring is based on general domain reputation"
+    ],
+    "transparency": [
+      "Full audit log of every API call and reasoning step is available",
+      "Every verdict includes a transparent reasoning chain",
+      "Evidence citations are provided with source URLs",
+      "The multi-agent debate feature provides multiple perspectives"
+    ]
+  },
+  "audit_log": [
+    {
+      "node": "orchestrator",
+      "action": "start",
+      "text_length": 65,
+      "timestamp": "2026-03-03T15:26:29.692423"
+    },
+    {
+      "node": "claim_extractor",
+      "action": "start",
+      "timestamp": "2026-03-03T15:26:29.701664"
+    },
+    {
+      "node": "claim_extractor",
+      "action": "error",
+      "error": "Error code: 404 - {'error': {'message': 'No endpoints found for qwen/qwen3-235b-a22b-thinking-2507:free.', 'code': 404}, 'user_id': 'user_2yVnHEpsivhlQPBb5QSopB0VJQ7'}",
+      "timestamp": "2026-03-03T15:26:37.257418"
+    },
+    {
+      "node": "finalize",
+      "action": "complete",
+      "timestamp": "2026-03-03T15:26:37.259545"
+    }
+  ],
+  "started_at": "2026-03-03T15:26:37.260030",
+  "completed_at": "2026-03-03T15:26:37.260006",
+  "error": "Claim extraction failed: Error code: 404 - {'error': {'message': 'No endpoints found for qwen/qwen3-235b-a22b-thinking-2507:free.', 'code': 404}, 'user_id': 'user_2yVnHEpsivhlQPBb5QSopB0VJQ7'}"
+}
